@@ -6,6 +6,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Returns specific titles. Requires query parameters:
+// - `start`: non-negative int, offset from cached articles.
+// - `count`: how many articles to load. Could load less, if it goes out-of-bounds.
+// Calls `App.GetTitles` inside.
 func GetTitles(app *App) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		start := c.Query("start")
@@ -36,6 +40,8 @@ func GetTitles(app *App) func(c *gin.Context) {
 	}
 }
 
+// Returns all cached titles.
+// Calls `App.GetAllTitles` inside.
 func GetAllTitles(app *App) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		titles := app.GetAllTitles()
@@ -43,6 +49,9 @@ func GetAllTitles(app *App) func(c *gin.Context) {
 	}
 }
 
+// Returns specific articles. Requires query parameters:
+// - `index`: non-negative int, position in cached articles.
+// Calls `App.GetArticle` inside.
 func GetArticle(app *App) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		index := c.Param("index")
@@ -57,5 +66,14 @@ func GetArticle(app *App) func(c *gin.Context) {
 			return
 		}
 		c.JSON(200, gin.H{"ok": true, "article": article})
+	}
+}
+
+// Returns all cached articles.
+// Calls `App.GetAllArticles` inside.
+func GetAllArticles(app *App) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		articles := app.GetAllArticles()
+		c.JSON(200, gin.H{"articles": articles})
 	}
 }

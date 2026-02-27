@@ -6,19 +6,29 @@ import (
 	"sync"
 )
 
+// Represents cached in memory article.
 type Article struct {
+	// Internal identifier, used for updates.
 	Id          int    `json:"-"`
+	// Title of the article.
 	Title       string `json:"title"`
+	// Content of article.
 	Content     string `json:"content"`
+	// Date of the article. Can be used for partially known dates, e.g., `Winter 1921`.
+	// It's recommended to follow format: `dd mmmm yyyy`.
 	WrittenDate string `json:"written_date"`
 }
 
+// Represents application state.
 type App struct {
+	// List of cached articles.
 	Articles []Article
+	// Database connection.
 	Conn     *sql.DB
 	lock     sync.RWMutex
 }
 
+// Creates table for articles, if not exists.
 func (a *App) InitTable() error {
 	_, err := a.Conn.Exec(`
 		CREATE TABLE IF NOT EXISTS articles (
@@ -33,7 +43,8 @@ func (a *App) InitTable() error {
 	return err
 }
 
-func (a *App) UpdateArticles() error {
+// Retrieves and puts in cache articles from database. Useful at startup or after updates.
+func (a *App) RetrieveArticles() error {
 	a.lock.Lock()
 	defer a.lock.Unlock()
 
@@ -59,7 +70,8 @@ func (a *App) UpdateArticles() error {
 	return nil
 }
 
-func (a *App) GetArticles() []Article {
+// Returns all cached articles.
+func (a *App) GetAllArticles() []Article {
 	a.lock.RLock()
 	defer a.lock.RUnlock()
 
@@ -68,6 +80,9 @@ func (a *App) GetArticles() []Article {
 	return result
 }
 
+// Returns only list of cached titles from `startIndex` to `min(startIndex+titleCount, len(cachedArticles))`.
+// If any of inputs is negative, returns error.
+// If `startIndex >= len(cachedArticles)`, returns error.
 func (a *App) GetTitles(startIndex, titleCount int) ([]string, error) {
 	if startIndex < 0 {
 		return nil, fmt.Errorf("start index is negative")
@@ -91,6 +106,7 @@ func (a *App) GetTitles(startIndex, titleCount int) ([]string, error) {
 	return titles, nil
 }
 
+// Returns all cached titles.
 func (a *App) GetAllTitles() []string {
 	a.lock.RLock()
 	defer a.lock.RUnlock()
@@ -102,6 +118,8 @@ func (a *App) GetAllTitles() []string {
 	return titles
 }
 
+// Returns specified cached article.
+// If index is negative, or `>= len(cachedArticles)`, returns error.
 func (a *App) GetArticle(index int) (Article, error) {
 	if index < 0 {
 		return Article{}, fmt.Errorf("index is negative")

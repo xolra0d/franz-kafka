@@ -20,7 +20,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = app.UpdateArticles()
+	err = app.RetrieveArticles()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -31,6 +31,7 @@ func main() {
 	router.GET("/titles", GetTitles(app))
 	router.GET("/all_titles", GetAllTitles(app))
 	router.GET("/articles/:index", GetArticle(app))
+	router.GET("/all_articles", GetAllArticles(app))
 
 	log.Fatal(router.Run("0.0.0.0:80"))
 }
