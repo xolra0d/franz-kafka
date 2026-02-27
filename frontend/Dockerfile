@@ -2,6 +2,9 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
+ARG VITE_BACKEND_IP
+ENV VITE_BACKEND_IP=$VITE_BACKEND_IP
+
 COPY my-app/package*.json ./
 
 RUN npm install
